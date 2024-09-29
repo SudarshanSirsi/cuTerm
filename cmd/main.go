@@ -9,8 +9,8 @@ import (
 )
 
 func main() {
-  p := tea.NewProgram(ui.InitialModel(), tea.WithAltScreen())
-  if err := p.Start(); err != nil {
+  Program := tea.NewProgram(ui.InitialModel(), tea.WithAltScreen())
+  if _, err := Program.Run(); err != nil {
     fmt.Printf("Error: %v", err)
     os.Exit(1)
   }

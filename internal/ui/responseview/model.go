@@ -1,6 +1,7 @@
 package responseview
 
 import (
+  "fmt"
   tea "github.com/charmbracelet/bubbletea"
   "github.com/charmbracelet/lipgloss"
 )

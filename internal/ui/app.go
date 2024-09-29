@@ -28,6 +28,20 @@ type keyMap struct {
   Quit  key.Binding
 }
 
+func (km keyMap) FullHelp() [][]key.Binding {
+  return [][]key.Binding{
+    {km.Up, km.Down, km.Left, km.Right},
+    {km.Help, km.Quit},
+  }
+}
+
+// Implementing ShortHelp() to satisfy help.KeyMap interface
+func (km keyMap) ShortHelp() []key.Binding {
+  return []key.Binding{
+    km.Up, km.Down, km.Help, km.Quit,
+  }
+}
+
 func InitialModel() Model {
   return Model{
     treeView:     treeview.New(),
@@ -54,7 +68,10 @@ func (m Model) Init() tea.Cmd {
   return nil
 }
 
+
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+  var cmds []tea.Cmd
+
   switch msg := msg.(type) {
   case tea.KeyMsg:
     switch {
@@ -73,17 +90,25 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
     }
   }
 
-  var cmd tea.Cmd
+  // Use tea.Batch to handle multiple cmds, instead of declaring and not using
   switch m.activeView {
   case "tree":
-    m.treeView, cmd = m.treeView.Update(msg)
+    treeModel, cmd := m.treeView.Update(msg)
+    m.treeView = treeModel.(treeview.Model)
+    cmds = append(cmds, cmd)
   case "request":
-    m.requestView, cmd = m.requestView.Update(msg)
+    requestModel, cmd := m.requestView.Update(msg)
+    m.requestView = requestModel.(requestview.Model)
+    cmds = append(cmds, cmd)
   case "response":
-    m.responseView, cmd = m.responseView.Update(msg)
+    responseModel, cmd := m.responseView.Update(msg)
+    m.responseView = responseModel.(responseview.Model)
+    cmds = append(cmds, cmd)
   }
-  return m, cmd
+
+  return m, tea.Batch(cmds...)
 }
+
 
 func (m Model) View() string {
   treeView := lipgloss.NewStyle().
